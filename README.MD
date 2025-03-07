@@ -7,7 +7,10 @@
  * @LastEditTime  : 2020-08-26 15:37:52
  -->
 
-# Lovelace DC1 Card
+
+
+
+# Lovelace zDC1 Card
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 
@@ -15,7 +18,11 @@
 
 + 卡片可以定义多个传感器,显示排插的相关数据
 + 4个switch开关, 3个是插座,还有一个是USB, 可自由排序
+
 ## 更新
+v 1.2.0-mod
+- 修改为适配 [a2633063](https://github.com/a2633063/zDC1)大佬的zDC1.
+
 v 1.2.0
 + 优化代码,修复一些小bug
 + 增加前端UI的卡片配置
