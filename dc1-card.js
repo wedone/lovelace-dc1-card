@@ -317,8 +317,8 @@ export class DC1CardEditor extends LitElement {
         };
     }
     render() {
-        var sensorRE = new RegExp("sensor\.dc|sensor\.tc")
-        var switchRE = new RegExp("switch\.dc|switch\.tc")
+        var sensorRE = new RegExp("sensor\.dc|sensor\.tc|sensor\.zdc1")
+        var switchRE = new RegExp("switch\.dc|switch\.tc|switch\.zdc1")
         var sensors = [
             {c:"a",n:"电流"},
             {c:"w",n:"功率"},
