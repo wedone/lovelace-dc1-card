@@ -17,7 +17,7 @@
 + 4个switch开关, 3个是插座,还有一个是USB, 可自由排序
 ## 更新
 v1.2.0-mod
-- 适配[a2633063]大佬的zDC1(https://github.com/a2633063/zDC1)
+- 适配[a2633063](https://github.com/a2633063/zDC1)大佬的zDC1
 
 v 1.2.0
 + 优化代码,修复一些小bug
