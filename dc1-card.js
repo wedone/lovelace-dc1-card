@@ -7,7 +7,7 @@
  * @LastEditTime  : 2020-08-26 15:32:40
  */
 
-console.info("%c PHICOMM DC1 CARD \n%c   Version 1.2.0  ",
+console.info("%c PHICOMM zDC1 CARD \n%c   Version 1.2.0-mod  ",
 "color: orange; font-weight: bold; background: black", 
 "color: white; font-weight: bold; background: dimgray");
 
@@ -54,15 +54,6 @@ class DC1Card extends HTMLElement {
                     break;
                 case 'v':
                     spanv.innerHTML = v;
-                    break;
-                case 'today':
-                    spanv.innerHTML = v;
-                    break;
-                case 'yesterday':
-                    spanv.innerHTML = v;
-                    break;
-                case 'total':
-                    spanv.innerHTML = Math.ceil(v);
                     break;
             }
             
@@ -137,15 +128,6 @@ class DC1Card extends HTMLElement {
                     break;
                 case 'v':
                     str = '<span class="sn">电压:</span><span class="sv"></span><span class="su">V</span>';
-                    break;
-                case 'today':
-                    str = '<span class="sn">今日:</span><span class="sv"></span><span class="su">度</span>';
-                    break;
-                case 'yesterday':
-                    str = '<span class="sn">昨天:</span><span class="sv"></span><span class="su">度</span>';
-                    break;
-                case 'total':
-                    str = '<span class="sn">总量:</span><span class="sv"></span><span class="su">度</span>';
                     break;
             }
             sensorBox.innerHTML = str;
@@ -322,10 +304,7 @@ export class DC1CardEditor extends LitElement {
         var sensors = [
             {c:"a",n:"电流"},
             {c:"w",n:"功率"},
-            {c:"v",n:"电压"},
-            {c:"today",n:"今日电量"},
-            {c:"yesterday",n:"昨日电量"},
-            {c:"total",n:"总电量"}
+            {c:"v",n:"电压"}
         ]
         if (!this.hass) {
             return html`dddddd
