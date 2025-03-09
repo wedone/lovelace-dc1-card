@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DC1卡片预览</title>
+    <style>
+        body {
+            font-family: 'Roboto', 'Noto', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 16px;
+            --primary-color: #03a9f4;
+            --accent-color: #ff9800;
+            --primary-text-color: #212121;
+            --secondary-text-color: #727272;
+            --paper-item-icon-active-color: #fdd835;
+            --paper-item-icon-color: #44739e;
+            --icon-color-off: #44739e;
+            --card-background-color: #ffffff;
+            --ha-card-border-radius: 4px;
+            --box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 16px;
+            border-radius: 4px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .config-panel {
+            background-color: white;
+            padding: 16px;
+            border-radius: 4px;
+            box-shadow: var(--box-shadow);
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .preview-panel {
+            background-color: white;
+            padding: 16px;
+            border-radius: 4px;
+            box-shadow: var(--box-shadow);
+            flex: 2;
+            min-width: 400px;
+            min-height: 300px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--secondary-text-color);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+        }
+        
+        .entity-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+        
+        .entity-row input {
+            flex: 1;
+        }
+        
+        .entity-row button {
+            background-color: #f44336;
+        }
+        
+        .color-input {
+            display: flex;
+            align-items: center;
+        }
+        
+        .color-input input[type="color"] {
+            width: 50px;
+            height: 30px;
+            margin-right: 8px;
+        }
+        
+        .color-input input[type="text"] {
+            flex: 1;
+        }
+        
+        .small-button {
+            padding: 4px 8px;
+            margin-left: 8px;
+            font-size: 12px;
+        }
+        
+        .reset-btn {
+            background-color: #9e9e9e;
+        }
+        
+        .full-button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            background-color: #607d8b;
+        }
+        
+        .code-line {
+            font-size: 11px;
+            color: #888;
+            font-style: italic;
+        }
+        
+        .code-snippet {
+            display: none;
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        .view-code-btn {
+            padding: 2px 5px;
+            margin-left: 8px;
+            font-size: 10px;
+            background-color: #607d8b;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .view-code-btn:hover {
+            background-color: #455a64;
+        }
+        
+        #debug-info {
+            margin-top: 16px;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>DC1卡片预览</h1>
+            <p>实时预览和修改DC1卡片布局</p>
+        </div>
+        
+        <div class="card-container">
+            <div class="config-panel">
+                <h2>配置</h2>
+                <div class="form-group">
+                    <label for="card-name">卡片名称</label>
+                    <input type="text" id="card-name" value="PHICOMM">
+                </div>
+                
+                <h3>布局设置</h3>
+                <div class="form-group">
+                    <label for="card-height">卡片高度 <span class="code-line">setConfig函数: this.cardH = '70px';</span><button class="view-code-btn">查看代码</button></label>
+                    <div class="code-snippet">
+                        <pre>this._config = JSON.parse(JSON.stringify(config));
+this.cardH = '70px';
+this.name = this._config.name || 'PHICOMM';</pre>
+                    </div>
+                    <input type="text" id="card-height" value="113px">
+                    <button id="apply-height" class="small-button">应用</button>
+                    <button id="reset-height" class="small-button reset-btn">重置</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="name-width">卡片名称宽度 <span class="code-line">CSS选择器 #name: width: 60px;</span><button class="view-code-btn">查看代码</button></label>
+                    <div class="code-snippet">
+                        <pre>#name{
+    transform: rotate(90deg);
+    width: 60px;
+    height: 20px;</pre>
+                    </div>
+                    <input type="text" id="name-width" value="113px">
+                    <button id="apply-name-width" class="small-button">应用</button>
+                    <button id="reset-name-width" class="small-button reset-btn">重置</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="icon-size">图标大小 <span class="code-line">CSS选择器 .boxicon</span><button class="view-code-btn">查看代码</button></label>
+                    <div class="code-snippet">
+                        <pre>.boxicon{
+    color: var(--icon-color);
+    opacity: var(--box-opacity);
+    display: block;</pre>
+                    </div>
+                    <input type="text" id="icon-size" value="24px">
+                    <button id="apply-icon-size" class="small-button">应用</button>
+                    <button id="reset-icon-size" class="small-button reset-btn">重置</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="icon-top">图标上边距 <span class="code-line">CSS选择器 .boxicon: top: calc(50% - 12px);</span><button class="view-code-btn">查看代码</button></label>
+                    <div class="code-snippet">
+                        <pre>    position: absolute;
+    top: calc( 50% - 12px );
+    left: calc( 50% - 12px );</pre>
+                    </div>
+                    <input type="text" id="icon-top" value="calc(50% - 12px)">
+                    <button id="apply-icon-top" class="small-button">应用</button>
+                    <button id="reset-icon-top" class="small-button reset-btn">重置</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="icon-left">图标左边距 <span class="code-line">CSS选择器 .boxicon: left: calc(50% - 12px);</span><button class="view-code-btn">查看代码</button></label>
+                    <div class="code-snippet">
+                        <pre>    position: absolute;
+    top: calc( 50% - 12px );
+    left: calc( 50% - 12px );</pre>
+                    </div>
+                    <input type="text" id="icon-left" value="calc(50% - 12px)">
+                    <button id="apply-icon-left" class="small-button">应用</button>
+                    <button id="reset-icon-left" class="small-button reset-btn">重置</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="title-size">标题字体大小 <span class="code-line">CSS选择器 .dcboxtitle</span><button class="view-code-btn">查看代码</button></label>
+                    <div class="code-snippet">
+                        <pre>.dcboxtitle{
+    width: 100%;
+    display: block;
+    text-align: center;</pre>
+                    </div>
+                    <input type="text" id="title-size" value="12px">
+                    <button id="apply-title-size" class="small-button">应用</button>
+                    <button id="reset-title-size" class="small-button reset-btn">重置</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="title-top">标题上边距 <span class="code-line">CSS选择器 .dcboxtitle: top: 80%;</span><button class="view-code-btn">查看代码</button></label>
+                    <div class="code-snippet">
+                        <pre>    text-align: center;
+    position: relative;
+    top: 80%;</pre>
+                    </div>
+                    <input type="text" id="title-top" value="80%">
+                    <button id="apply-title-top" class="small-button">应用</button>
+                    <button id="reset-title-top" class="small-button reset-btn">重置</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="circle-size">圆形按钮大小 <span class="code-line">CSS选择器 .dcboxcont>:first-child: height/width: 80%;</span><button class="view-code-btn">查看代码</button></label>
+                    <div class="code-snippet">
+                        <pre>    position: absolute;
+    top: 0;
+    left: 0;
+    height: 80%;
+    width: 80%;</pre>
+                    </div>
+                    <input type="text" id="circle-size" value="80%">
+                    <button id="apply-circle-size" class="small-button">应用</button>
+                    <button id="reset-circle-size" class="small-button reset-btn">重置</button>
+                </div>
+                
+                <div class="form-group">
+                    <button id="reset-all" class="full-button">恢复所有默认设置</button>
+                </div>
+                
+                <h3>颜色设置</h3>
+                <div class="form-group">
+                    <label for="background-color">背景颜色</label>
+                    <div class="color-input">
+                        <input type="color" id="background-color" value="#ffffff">
+                        <input type="text" id="background-color-text" value="#ffffff">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="title-color">文本颜色</label>
+                    <div class="color-input">
+                        <input type="color" id="title-color" value="#44739e">
+                        <input type="text" id="title-color-text" value="#44739e">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="on-color">开状态颜色</label>
+                    <div class="color-input">
+                        <input type="color" id="on-color" value="#fdd835">
+                        <input type="text" id="on-color-text" value="#fdd835">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="off-color">关状态颜色</label>
+                    <div class="color-input">
+                        <input type="color" id="off-color" value="#44739e">
+                        <input type="text" id="off-color-text" value="#44739e">
+                    </div>
+                </div>
+                
+                <h3>传感器</h3>
+                <div class="form-group">
+                    <label for="sensor-a">电流传感器</label>
+                    <input type="text" id="sensor-a" value="sensor.dc1_current">
+                </div>
+                
+                <div class="form-group">
+                    <label for="sensor-w">功率传感器</label>
+                    <input type="text" id="sensor-w" value="sensor.dc1_power">
+                </div>
+                
+                <div class="form-group">
+                    <label for="sensor-v">电压传感器</label>
+                    <input type="text" id="sensor-v" value="sensor.dc1_voltage">
+                </div>
+                
+                <h3>插孔</h3>
+                <div id="entities-container">
+                    <div class="entity-row">
+                        <input type="text" placeholder="图标" value="power">
+                        <input type="text" placeholder="名称" value="插孔1">
+                        <input type="text" placeholder="实体ID" value="switch.dc1_1">
+                        <button class="remove-entity">-</button>
+                    </div>
+                    <div class="entity-row">
+                        <input type="text" placeholder="图标" value="power">
+                        <input type="text" placeholder="名称" value="插孔2">
+                        <input type="text" placeholder="实体ID" value="switch.dc1_2">
+                        <button class="remove-entity">-</button>
+                    </div>
+                    <div class="entity-row">
+                        <input type="text" placeholder="图标" value="power">
+                        <input type="text" placeholder="名称" value="插孔3">
+                        <input type="text" placeholder="实体ID" value="switch.dc1_3">
+                        <button class="remove-entity">-</button>
+                    </div>
+                </div>
+                <button id="add-entity">添加插孔</button>
+                
+                <div class="form-group" style="margin-top: 16px;">
+                    <button id="apply-config">应用配置</button>
+                </div>
+            </div>
+            
+            <div class="preview-panel">
+                <h2>预览</h2>
+                <div id="card-preview"></div>
+                <div id="debug-info"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟LitElement环境
+        const LitElement = class {};
+        
+        // 创建模拟的html和css函数
+        const html = (strings, ...values) => {
+            let result = '';
+            for (let i = 0; i < strings.length; i++) {
+                result += strings[i];
+                if (i < values.length) {
+                    if (typeof values[i] === 'function') {
+                        result += values[i]();
+                    } else {
+                        result += values[i];
+                    }
+                }
+            }
+            return result;
+        };
+        
+        const css = (strings, ...values) => {
+            let result = '';
+            for (let i = 0; i < strings.length; i++) {
+                result += strings[i];
+                if (i < values.length) {
+                    result += values[i];
+                }
+            }
+            return result;
+        };
+        
+        // 将html和css函数添加到LitElement的原型
+        LitElement.prototype.html = html;
+        LitElement.prototype.css = css;
+
+        // 模拟Home Assistant环境
+        if (!window.customElements.get("ha-card")) {
+            class HaCard extends HTMLElement {
+                constructor() {
+                    super();
+                    this.attachShadow({ mode: 'open' });
+                }
+                
+                connectedCallback() {
+                    this.shadowRoot.innerHTML = `
+                        <style>
+                            :host {
+                                display: block;
+                                border-radius: var(--ha-card-border-radius, 4px);
+                                box-shadow: var(--box-shadow);
+                                background: var(--card-background-color, white);
+                                overflow: hidden;
+                            }
+                        </style>
+                        <slot></slot>
+                    `;
+                }
+            }
+            
+            customElements.define("ha-card", HaCard);
+        }
+        
+        if (!window.customElements.get("ha-icon")) {
+            class HaIcon extends HTMLElement {
+                static get observedAttributes() {
+                    return ['icon'];
+                }
+                
+                constructor() {
+                    super();
+                    this.attachShadow({ mode: 'open' });
+                }
+                
+                connectedCallback() {
+                    this.updateIcon();
+                }
+                
+                attributeChangedCallback(name, oldValue, newValue) {
+                    if (name === 'icon') {
+                        this.updateIcon();
+                    }
+                }
+                
+                updateIcon() {
+                    const icon = this.getAttribute('icon') || '';
+                    const parts = icon.split(':');
+                    let iconName = parts.length > 1 ? parts[1] : icon;
+                    
+                    this.shadowRoot.innerHTML = `
+                        <style>
+                            :host {
+                                display: inline-flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: inherit;
+                            }
+                        </style>
+                        <span>⚙️</span>
+                    `;
+                }
+            }
+            
+            customElements.define("ha-icon", HaIcon);
+        }
+
+        if (!window.customElements.get("ha-icon-button")) {
+            class HaIconButton extends HTMLElement {
+                constructor() {
+                    super();
+                    this.attachShadow({ mode: 'open' });
+                }
+                
+                connectedCallback() {
+                    this.shadowRoot.innerHTML = `
+                        <style>
+                            :host {
+                                display: inline-flex;
+                                align-items: center;
+                                justify-content: center;
+                                cursor: pointer;
+                                width: 24px;
+                                height: 24px;
+                            }
+                        </style>
+                        <ha-icon icon="${this.getAttribute('icon') || 'mdi:help'}"></ha-icon>
+                    `;
+                }
+            }
+            
+            customElements.define("ha-icon-button", HaIconButton);
+        }
+        
+        // 模拟Home Assistant状态
+        const mockHass = {
+            states: {
+                'sensor.dc1_current': {
+                    state: '0.5',
+                    attributes: {
+                        friendly_name: '电流',
+                        icon: 'mdi:current-ac'
+                    }
+                },
+                'sensor.dc1_power': {
+                    state: '110.0',
+                    attributes: {
+                        friendly_name: '功率',
+                        icon: 'mdi:flash'
+                    }
+                },
+                'sensor.dc1_voltage': {
+                    state: '220.0',
+                    attributes: {
+                        friendly_name: '电压',
+                        icon: 'mdi:flash'
+                    }
+                },
+                'switch.dc1_1': {
+                    state: 'on',
+                    attributes: {
+                        friendly_name: '插孔1',
+                        icon: 'mdi:power'
+                    }
+                },
+                'switch.dc1_2': {
+                    state: 'off',
+                    attributes: {
+                        friendly_name: '插孔2',
+                        icon: 'mdi:power'
+                    }
+                },
+                'switch.dc1_3': {
+                    state: 'on',
+                    attributes: {
+                        friendly_name: '插孔3',
+                        icon: 'mdi:power'
+                    }
+                }
+            },
+            callService: function(domain, service, data) {
+                console.log('调用服务:', domain, service, data);
+                const entityId = data.entity_id;
+                if (this.states[entityId]) {
+                    if (service === 'toggle') {
+                        this.states[entityId].state = this.states[entityId].state === 'on' ? 'off' : 'on';
+                    } else if (service === 'turn_on') {
+                        this.states[entityId].state = 'on';
+                    } else if (service === 'turn_off') {
+                        this.states[entityId].state = 'off';
+                    }
+                    updateCardPreview();
+                }
+            },
+            localize: function(key) {
+                const translations = {
+                    'ui.panel.lovelace.editor.card.generic.title': '标题',
+                    'ui.panel.lovelace.editor.card.config.optional': '可选',
+                    'ui.panel.lovelace.editor.card.map.delete': '删除',
+                    'ui.dialogs.helper_settings.input_select.add': '添加'
+                };
+                return translations[key] || key;
+            }
+        };
+
+        // 内联DC1Card代码，避免模块导入问题
+        class DC1Card extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+            }
+            
+            static getConfigElement() {
+                return document.createElement("dc1-card-editor");
+            }
+
+            static getStubConfig() {
+                return {
+                    name: 'PHICOMM',
+                    sensors: {},
+                    entitys: []
+                };
+            }
+
+            set hass(hass) {
+                let config = this._config;
+                this._hass = hass;
+                for(var i=0; i<this._config.entitys.length; i++){
+                    this.entitys[i].querySelector("ha-icon.boxicon").setAttribute('icon', config.entitys[i].icon || hass.states[config.entitys[i].entity].attributes.icon);
+                    this.entitys[i].querySelector("span.dcboxtitle").innerHTML = config.entitys[i].title || hass.states[config.entitys[i].entity].attributes.friendly_name;
+                    this.entitys[i].className = 'dcbox dc-box-'+ hass.states[config.entitys[i].entity].state;
+                }
+                for (let key in config.sensors) {
+                    let v = Math.ceil(hass.states[config.sensors[key]].state*10)/10;
+                    let spanv = this.dcInfo.querySelector('#sensorBox-'+key+'>span.sv');
+                    if (spanv) {
+                        spanv.innerHTML = v;
+                    }
+                }
+            }
+            
+            setConfig(config) {
+                this._config = JSON.parse(JSON.stringify(config));
+
+                this.cardH = this._config.card_height || '113px';
+                this.nameWidth = this._config.name_width || '113px';
+                this.iconSize = this._config.icon_size || '24px';
+                this.iconTop = this._config.icon_top || 'calc(50% - 12px)';
+                this.iconLeft = this._config.icon_left || 'calc(50% - 12px)';
+                this.titleSize = this._config.title_size || '12px';
+                this.titleTop = this._config.title_top || '80%';
+                this.circleSize = this._config.circle_size || '80%';
+                
+                this.name = this._config.name || 'PHICOMM';
+                this.background_color = this._config.background_color ? this._config.background_color : 'var(--card-background-color)';
+                this.title_color = this._config.title_color ? this._config.title_color : 'var(--icon-color-off)';
+                this.on_color = this._config.on_color ? this._config.on_color : 'var(--paper-item-icon-active-color)';
+                this.off_color = this._config.off_color ? this._config.off_color : 'var(--icon-color-off)';
+
+                const root = this.shadowRoot;
+                if (root.lastChild) root.removeChild(root.lastChild);
+                const aspect = document.createElement('div');
+                aspect.id = 'aspect-ratio';
+                root.appendChild(aspect);
+                const card = document.createElement('ha-card');
+                const style = document.createElement('style');
+                style.textContent = this._cssData();
+                card.className = 'dc1';
+                card.appendChild(style);
+
+                const container = document.createElement('div');
+                container.id = 'container';
+                card.appendChild(container);
+                aspect.appendChild(card);
+
+                this.dcInfo = document.createElement('div');
+                this.dcInfo.id = 'dcinfo';
+                this.dcInfo.className = 'dcbox';
+                container.appendChild(this.dcInfo);
+
+                var nameBox = document.createElement('div');
+                nameBox.id = 'namebox';
+                nameBox.innerHTML = `<div id="name">${this.name}</div>`;
+                container.appendChild(nameBox);
+                
+                this.entitys = [];
+
+                for(var i=0; i<this._config.entitys.length; i++){
+                    var Box = document.createElement('div');
+                    Box.id = 'dcbox'+i;
+                    Box.className = 'dcbox';
+                    Box.setAttribute("data-entity", this._config.entitys[i].entity);
+                    Box.innerHTML = `<div class="dcboxcont"><div class="boxf"><span><ha-icon class="boxicon" icon="${this._config.entitys[i].icon}"></ha-icon></span></div></div><span class="dcboxtitle">${this._config.entitys[i].title}</span>`;
+                    container.appendChild(Box);
+                    this.entitys.push(Box);
+                    Box.addEventListener('click', (e) => this._toggle(e));
+                }
+
+                for (let key in config.sensors) {
+                    const sensorBox = document.createElement('div');
+                    sensorBox.id = 'sensorBox-'+key;
+                    sensorBox.className = 'sensorBox';
+                    let str;
+                    switch (key) {
+                        case 'a':
+                            str = '<span class="sn">电流:</span><span class="sv"></span><span class="su">A</span>';
+                            break;
+                        case 'w':
+                            str = '<span class="sn">功率:</span><span class="sv"></span><span class="su">W</span>';
+                            break;
+                        case 'v':
+                            str = '<span class="sn">电压:</span><span class="sv"></span><span class="su">V</span>';
+                            break;
+                    }
+                    sensorBox.innerHTML = str;
+                    this.dcInfo.appendChild(sensorBox);
+                }
+            }
+            
+            _toggle(e) {
+                let entity = e.currentTarget.dataset.entity;
+                this._hass.callService('switch', 'toggle', {
+                    entity_id: entity
+                });
+                this.fireEvent(e, 'haptic', 'success');
+            }
+            
+            _cssData(){
+                // 显示调试信息
+                const debugInfo = document.getElementById('debug-info');
+                if (debugInfo) {
+                    debugInfo.textContent = `当前卡片配置：
+卡片高度: ${this.cardH}
+名称宽度: ${this.nameWidth}
+图标大小: ${this.iconSize}
+图标位置: top=${this.iconTop}, left=${this.iconLeft}
+标题大小: ${this.titleSize}
+标题位置: ${this.titleTop}
+圆形按钮: ${this.circleSize}`;
+                }
+                
+                var css = `
+#aspect-ratio {
+    position: relative;
+    width: 100%;
+    height: ${this.cardH};
+}
+#aspect-ratio::before {
+    content: "";
+    display: block;
+    padding-bottom: 0;
+}
+#aspect-ratio>:first-child {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: ${this.background_color};
+}
+#container{
+    height: 100%;
+    width: 100%;
+    display: flex;
+}
+.dc-box-off{
+    --icon-color: ${this.off_color};
+    --box-shadow: var(--box-shadow);
+}
+.dc-box-on{
+    --icon-color: ${this.on_color};
+    --box-shadow: 0 0 5px ${this.on_color};
+}
+.dcbox{
+    flex:1;
+    margin:0;
+    position: relative;
+    color: ${this.title_color};
+}
+.boxicon{
+    color: var(--icon-color);
+    opacity: var(--box-opacity);
+    display: block;
+    position: absolute;
+    top: ${this.iconTop};
+    left: ${this.iconLeft};
+    font-size: ${this.iconSize};
+    width: ${this.iconSize};
+    height: ${this.iconSize};
+}
+.dcboxtitle{
+    width: 100%;
+    display: block;
+    text-align: center;
+    position: relative;
+    top: ${this.titleTop};
+    font-size: ${this.titleSize};
+}
+.dcboxcont {
+    position: relative;
+    margin: -50% 5%;
+    width: 90%;
+    top: 45%;
+}
+.dcboxcont::before {
+    content: "";
+    display: block;
+    padding-bottom: calc(100%);
+}
+.dcboxcont>:first-child {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: ${this.circleSize};
+    width: ${this.circleSize};
+    border-radius: 50%;
+    margin: calc((100% - ${this.circleSize}) / 2);
+    font-size: 12px;
+    color: var(--icon-color);
+    box-shadow: var(--box-shadow);
+    box-sizing: border-box;
+    border: 1px #ffffff17 solid;
+}
+#dcinfo{
+    background: #00000022;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 5px 6px 15px;
+    margin: 0;
+    border-radius: var(--ha-card-border-radius) 0px 0px var(--ha-card-border-radius);
+    min-width: 90px;
+}
+.sensorBox{
+    flex:1;
+    color : var(--icon-color);
+    display: flex;
+}
+.sn,.sv{
+    font-size: 12px;
+    line-height: 20px;
+    flex:1;
+    text-overflow: clip;
+    display: block;
+}
+.su{
+    font-size: 12px;
+    line-height: 20px;
+    flex:0.8;
+    text-overflow: clip;
+    display: block;
+}
+#namebox{
+    width: 20px;
+    background: #0000000d;
+}
+#name{
+    transform: rotate(90deg);
+    width: ${this.nameWidth};
+    height: 20px;
+    text-align: center;
+    transform-origin: bottom left;
+    margin-top: -20px;
+    color: ${this.title_color};
+    opacity: 0.3;
+}
+                `;
+                return css;
+            }
+            
+            fireEvent(type, detail, options) {
+                options = options || {};
+                detail = detail === null || detail === undefined ? {} : detail;
+                const e = new Event(type, {
+                    bubbles: options.bubbles === undefined ? true : options.bubbles,
+                    cancelable: Boolean(options.cancelable),
+                    composed: options.composed === undefined ? true : options.composed,
+                });
+                
+                e.detail = detail;
+                this.dispatchEvent(e);
+                return e;
+            }
+        }
+        
+        customElements.define("dc1-card", DC1Card);
+        
+        // 初始化卡片配置
+        let cardConfig = {
+            name: 'PHICOMM',
+            card_height: '113px',
+            name_width: '113px',
+            icon_size: '24px',
+            icon_top: 'calc(50% - 12px)',
+            icon_left: 'calc(50% - 12px)',
+            title_size: '12px',
+            title_top: '80%',
+            circle_size: '80%',
+            background_color: '#ffffff',
+            title_color: '#44739e',
+            on_color: '#fdd835',
+            off_color: '#44739e',
+            sensors: {
+                a: 'sensor.dc1_current',
+                w: 'sensor.dc1_power',
+                v: 'sensor.dc1_voltage'
+            },
+            entitys: [
+                {
+                    entity: 'switch.dc1_1',
+                    title: '插孔1',
+                    icon: 'mdi:power'
+                },
+                {
+                    entity: 'switch.dc1_2',
+                    title: '插孔2',
+                    icon: 'mdi:power'
+                },
+                {
+                    entity: 'switch.dc1_3',
+                    title: '插孔3',
+                    icon: 'mdi:power'
+                }
+            ]
+        };
+        
+        // 原始默认值
+        const defaultValues = {
+            card_height: '70px',  // 原始代码第65行的值
+            name_width: '60px',   // 原始代码第262行的值
+            icon_size: '24px',    // 默认值
+            icon_top: 'calc(50% - 12px)',
+            icon_left: 'calc(50% - 12px)',
+            title_size: '12px',
+            title_top: '80%',
+            circle_size: '80%'
+        };
+        
+        // 更新卡片预览
+        function updateCardPreview() {
+            const previewContainer = document.getElementById('card-preview');
+            previewContainer.innerHTML = '';
+            
+            const card = document.createElement('dc1-card');
+            card.setConfig(cardConfig);
+            card.hass = mockHass;
+            
+            previewContainer.appendChild(card);
+        }
+        
+        // 从表单更新配置
+        function updateConfigFromForm() {
+            const name = document.getElementById('card-name').value;
+            const cardHeight = document.getElementById('card-height').value;
+            const nameWidth = document.getElementById('name-width').value;
+            const iconSize = document.getElementById('icon-size').value;
+            const iconTop = document.getElementById('icon-top').value;
+            const iconLeft = document.getElementById('icon-left').value;
+            const titleSize = document.getElementById('title-size').value;
+            const titleTop = document.getElementById('title-top').value;
+            const circleSize = document.getElementById('circle-size').value;
+            const backgroundColor = document.getElementById('background-color').value;
+            const titleColor = document.getElementById('title-color').value;
+            const onColor = document.getElementById('on-color').value;
+            const offColor = document.getElementById('off-color').value;
+            
+            const sensorA = document.getElementById('sensor-a').value;
+            const sensorW = document.getElementById('sensor-w').value;
+            const sensorV = document.getElementById('sensor-v').value;
+            
+            const entityRows = document.querySelectorAll('#entities-container .entity-row');
+            const entities = [];
+            
+            entityRows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const entityId = inputs[2].value;
+                const title = inputs[1].value;
+                const icon = 'mdi:' + inputs[0].value;
+                
+                // 确保mockHass中有这个实体的状态
+                if (!mockHass.states[entityId]) {
+                    mockHass.states[entityId] = {
+                        state: 'off',
+                        attributes: {
+                            friendly_name: title,
+                            icon: icon
+                        }
+                    };
+                }
+                
+                entities.push({
+                    icon: icon,
+                    title: title,
+                    entity: entityId
+                });
+            });
+            
+            // 更新传感器状态
+            if (sensorA && !mockHass.states[sensorA]) {
+                mockHass.states[sensorA] = {
+                    state: '0.5',
+                    attributes: {
+                        friendly_name: '电流',
+                        icon: 'mdi:current-ac'
+                    }
+                };
+            }
+            
+            if (sensorW && !mockHass.states[sensorW]) {
+                mockHass.states[sensorW] = {
+                    state: '110.0',
+                    attributes: {
+                        friendly_name: '功率',
+                        icon: 'mdi:flash'
+                    }
+                };
+            }
+            
+            if (sensorV && !mockHass.states[sensorV]) {
+                mockHass.states[sensorV] = {
+                    state: '220.0',
+                    attributes: {
+                        friendly_name: '电压',
+                        icon: 'mdi:flash'
+                    }
+                };
+            }
+            
+            cardConfig = {
+                name: name,
+                card_height: cardHeight,
+                name_width: nameWidth,
+                icon_size: iconSize,
+                icon_top: iconTop,
+                icon_left: iconLeft,
+                title_size: titleSize,
+                title_top: titleTop,
+                circle_size: circleSize,
+                background_color: backgroundColor,
+                title_color: titleColor,
+                on_color: onColor,
+                off_color: offColor,
+                sensors: {
+                    a: sensorA,
+                    w: sensorW,
+                    v: sensorV
+                },
+                entitys: entities
+            };
+            
+            updateCardPreview();
+        }
+        
+        // 事件监听器
+        document.addEventListener('DOMContentLoaded', function() {
+            // 代码片段显示按钮
+            document.querySelectorAll('.view-code-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const codeSnippet = this.parentElement.nextElementSibling;
+                    
+                    // 关闭所有其他打开的代码片段
+                    document.querySelectorAll('.code-snippet').forEach(snippet => {
+                        if (snippet !== codeSnippet && snippet.style.display === 'block') {
+                            snippet.style.display = 'none';
+                        }
+                    });
+                    
+                    // 切换当前代码片段的显示状态
+                    if (codeSnippet.style.display === 'block') {
+                        codeSnippet.style.display = 'none';
+                    } else {
+                        codeSnippet.style.display = 'block';
+                    }
+                });
+            });
+            
+            // 实时应用参数变化
+            document.getElementById('apply-height').addEventListener('click', function() {
+                const value = document.getElementById('card-height').value;
+                cardConfig.card_height = value;
+                updateCardPreview();
+            });
+            
+            document.getElementById('apply-name-width').addEventListener('click', function() {
+                const value = document.getElementById('name-width').value;
+                cardConfig.name_width = value;
+                updateCardPreview();
+            });
+            
+            document.getElementById('apply-icon-size').addEventListener('click', function() {
+                const value = document.getElementById('icon-size').value;
+                cardConfig.icon_size = value;
+                updateCardPreview();
+            });
+            
+            document.getElementById('apply-icon-top').addEventListener('click', function() {
+                const value = document.getElementById('icon-top').value;
+                cardConfig.icon_top = value;
+                updateCardPreview();
+            });
+            
+            document.getElementById('apply-icon-left').addEventListener('click', function() {
+                const value = document.getElementById('icon-left').value;
+                cardConfig.icon_left = value;
+                updateCardPreview();
+            });
+            
+            document.getElementById('apply-title-size').addEventListener('click', function() {
+                const value = document.getElementById('title-size').value;
+                cardConfig.title_size = value;
+                updateCardPreview();
+            });
+            
+            document.getElementById('apply-title-top').addEventListener('click', function() {
+                const value = document.getElementById('title-top').value;
+                cardConfig.title_top = value;
+                updateCardPreview();
+            });
+            
+            document.getElementById('apply-circle-size').addEventListener('click', function() {
+                const value = document.getElementById('circle-size').value;
+                cardConfig.circle_size = value;
+                updateCardPreview();
+            });
+            
+            // 重置单个参数
+            document.getElementById('reset-height').addEventListener('click', function() {
+                document.getElementById('card-height').value = defaultValues.card_height;
+                cardConfig.card_height = defaultValues.card_height;
+                updateCardPreview();
+            });
+            
+            document.getElementById('reset-name-width').addEventListener('click', function() {
+                document.getElementById('name-width').value = defaultValues.name_width;
+                cardConfig.name_width = defaultValues.name_width;
+                updateCardPreview();
+            });
+            
+            document.getElementById('reset-icon-size').addEventListener('click', function() {
+                document.getElementById('icon-size').value = defaultValues.icon_size;
+                cardConfig.icon_size = defaultValues.icon_size;
+                updateCardPreview();
+            });
+            
+            document.getElementById('reset-icon-top').addEventListener('click', function() {
+                document.getElementById('icon-top').value = defaultValues.icon_top;
+                cardConfig.icon_top = defaultValues.icon_top;
+                updateCardPreview();
+            });
+            
+            document.getElementById('reset-icon-left').addEventListener('click', function() {
+                document.getElementById('icon-left').value = defaultValues.icon_left;
+                cardConfig.icon_left = defaultValues.icon_left;
+                updateCardPreview();
+            });
+            
+            document.getElementById('reset-title-size').addEventListener('click', function() {
+                document.getElementById('title-size').value = defaultValues.title_size;
+                cardConfig.title_size = defaultValues.title_size;
+                updateCardPreview();
+            });
+            
+            document.getElementById('reset-title-top').addEventListener('click', function() {
+                document.getElementById('title-top').value = defaultValues.title_top;
+                cardConfig.title_top = defaultValues.title_top;
+                updateCardPreview();
+            });
+            
+            document.getElementById('reset-circle-size').addEventListener('click', function() {
+                document.getElementById('circle-size').value = defaultValues.circle_size;
+                cardConfig.circle_size = defaultValues.circle_size;
+                updateCardPreview();
+            });
+            
+            // 恢复所有默认设置
+            document.getElementById('reset-all').addEventListener('click', function() {
+                document.getElementById('card-height').value = defaultValues.card_height;
+                document.getElementById('name-width').value = defaultValues.name_width;
+                document.getElementById('icon-size').value = defaultValues.icon_size;
+                document.getElementById('icon-top').value = defaultValues.icon_top;
+                document.getElementById('icon-left').value = defaultValues.icon_left;
+                document.getElementById('title-size').value = defaultValues.title_size;
+                document.getElementById('title-top').value = defaultValues.title_top;
+                document.getElementById('circle-size').value = defaultValues.circle_size;
+                
+                cardConfig.card_height = defaultValues.card_height;
+                cardConfig.name_width = defaultValues.name_width;
+                cardConfig.icon_size = defaultValues.icon_size;
+                cardConfig.icon_top = defaultValues.icon_top;
+                cardConfig.icon_left = defaultValues.icon_left;
+                cardConfig.title_size = defaultValues.title_size;
+                cardConfig.title_top = defaultValues.title_top;
+                cardConfig.circle_size = defaultValues.circle_size;
+                
+                updateCardPreview();
+            });
+            
+            // 颜色输入同步
+            document.querySelectorAll('input[type="color"]').forEach(input => {
+                const textInput = document.getElementById(input.id + '-text');
+                
+                input.addEventListener('input', () => {
+                    textInput.value = input.value;
+                });
+                
+                textInput.addEventListener('input', () => {
+                    input.value = textInput.value;
+                });
+            });
+            
+            // 添加实体
+            document.getElementById('add-entity').addEventListener('click', () => {
+                const container = document.getElementById('entities-container');
+                const row = document.createElement('div');
+                row.className = 'entity-row';
+                
+                // 生成唯一的实体ID
+                const entityCount = container.querySelectorAll('.entity-row').length + 1;
+                const newEntityId = `switch.dc1_new_${entityCount}`;
+                const newTitle = `新插孔${entityCount}`;
+                
+                row.innerHTML = `
+                    <input type="text" placeholder="图标" value="power">
+                    <input type="text" placeholder="名称" value="${newTitle}">
+                    <input type="text" placeholder="实体ID" value="${newEntityId}">
+                    <button class="remove-entity">-</button>
+                `;
+                container.appendChild(row);
+                
+                // 添加删除按钮事件
+                row.querySelector('.remove-entity').addEventListener('click', function() {
+                    row.remove();
+                });
+                
+                // 预先添加到mockHass状态
+                mockHass.states[newEntityId] = {
+                    state: 'off',
+                    attributes: {
+                        friendly_name: newTitle,
+                        icon: 'mdi:power'
+                    }
+                };
+            });
+            
+            // 删除实体
+            document.querySelectorAll('.remove-entity').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentElement.remove();
+                });
+            });
+            
+            // 应用配置
+            document.getElementById('apply-config').addEventListener('click', updateConfigFromForm);
+            
+            // 初始化预览
+            updateCardPreview();
+        });
+    </script>
+</body>
+</html> 
