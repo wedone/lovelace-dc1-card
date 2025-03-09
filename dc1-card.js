@@ -213,8 +213,8 @@ class DC1Card extends HTMLElement {
     position: absolute;
     top: 0;
     left: 0;
-    height: 80%;
-    width: 80%;
+    height: 60%;
+    width: 60%;
     border-radius: 50%;
     margin: 10%;
     font-size: 12px;
