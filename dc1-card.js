@@ -23,7 +23,7 @@ class DC1Card extends HTMLElement {
         this.attachShadow({ mode: 'open' });
     }
     static getConfigElement() {
-        return document.createElement("dc1-card-editor");
+        return document.createElement("zdc1-card-editor");
       }
 
     static getStubConfig() {
@@ -285,7 +285,7 @@ class DC1Card extends HTMLElement {
         return e
       }
 }
-customElements.define("dc1-card", DC1Card);
+customElements.define("zdc1-card", DC1Card);
 
 export class DC1CardEditor extends LitElement {
     setConfig(config) {
@@ -580,11 +580,11 @@ export class DC1CardEditor extends LitElement {
       }
 
 }
-customElements.define("dc1-card-editor", DC1CardEditor);
+customElements.define("zdc1-card-editor", DC1CardEditor);
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: "dc1-card",
+  type: "zdc1-card",
   name: "斐讯排插",
   preview: true, // Optional - defaults to false
   description: "自定义斐讯排插卡片" // Optional
